@@ -43,6 +43,10 @@ export default ({ current, unit, onChange }) => {
 	const [anchorEl, setAnchorEl] = useState(null);
 	const [open, setOpen] = useState(null);
 
+	if (!unit || !unit.job) {
+		return null; // انتظار تحميل البيانات
+	}
+
 	switch (unit.job) {
 		case 'police':
 			return (

@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { TextField, Grid, InputAdornment, IconButton, Checkbox, FormControlLabel } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Nui from '../../util/Nui';
 
 import { debounce } from 'lodash';
 
@@ -110,12 +111,8 @@ export default () => {
     const sendMessage = useMemo(() => debounce((input, message) => {
         input.value = '';
 
-        dispatch({
-            type: 'EMIT_LOG_MESSAGE',
-            payload: {
-                message,
-            }
-        });
+        Nui.send('NUI:LogMessage', { message });
+        
     }, 1500, { leading: true, trailing: false }), []);
 
     const onSubmit = (e) => {

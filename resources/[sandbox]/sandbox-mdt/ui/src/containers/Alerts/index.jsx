@@ -7,13 +7,15 @@ import Notifications from './Notifications';
 import Roster from './Roster';
 import Dispatch from './Dispatch';
 import { ErrorBoundary } from '../../components';
+import Nui from '../../util/Nui';
 
 export default () => {
 	const showing = useSelector((state) => state.alerts.showing);
 	const job = useSelector((state) => state.app.govJob);
-	const connected = useSelector((state) => state.alerts.socketConnected);
+	const initialised = useSelector((state) => state.alerts.myUnit != null);
 
 	const dispatch = useDispatch();
+
 	const useStyles = makeStyles((theme) => ({
 		container: {
 			height: '100%',
@@ -30,30 +32,41 @@ export default () => {
 	}));
 
 	useEffect(() => {
-		if (process.env.NODE_ENV != 'production') {
-			dispatch({
-				type: 'ALERTS_WS_CONNECT',
-				payload: {
-					url: 'http://localhost:4002/mdt-alerts',
-					token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lc3BhY2UiOiJtZHQtYWxlcnRzIiwic291cmNlIjo5OSwiam9iIjoicG9saWNlIiwiY2FsbHNpZ24iOiIxMDEiLCJkZXZlbG9wbWVudCI6dHJ1ZSwiaWF0IjoxNjk0OTU0Mjg2fQ.a7oKjM2QTpi-dh_3Ay8fhM-vymTSJQKU_PpA6UTcmVA',
-				}
-			});
-		}
-	}, []);
+		// Log initialization state
+		// console.log('Component mounted');
+		// console.log('showing:', showing);
+		// console.log('job:', job);
+		// console.log('initialised (myUnit != null):', initialised);
+		// Optional NUI handshake
+		// Nui.send('NUIReady');
+	}, [dispatch, showing, job, initialised]);
 
 	const classes = useStyles();
 	const hasPerm = usePermissions();
 
-	if (!hasPerm('police_alerts') && !hasPerm('ems_alerts') && !hasPerm('tow_alerts') && !hasPerm('doc_alerts')) return null;
-	if (!connected) return null;
+	// console.log('hasPerm police_alerts:', hasPerm('police_alerts'));
+	// console.log('hasPerm ems_alerts:', hasPerm('ems_alerts'));
+	// console.log('hasPerm tow_alerts:', hasPerm('tow_alerts'));
+	// console.log('hasPerm doc_alerts:', hasPerm('doc_alerts'));
 
+	if (!hasPerm('police_alerts') && !hasPerm('ems_alerts') && !hasPerm('tow_alerts') && !hasPerm('doc_alerts')) {
+		// console.log('User does not have any alert permissions. Rendering null.');
+		return null;
+	}
+
+	if (!initialised) {
+		// console.log('Alerts NUI not yet initialized by server (myUnit is null).');
+		return null;
+	}
+
+	// console.log('Rendering Alerts UI');
 	return (
 		<>
 			<div className={classes.container}>
 				<Notifications />
 				<ErrorBoundary>{showing && <Roster />}</ErrorBoundary>
 			</div>
-			{showing && job.Id !== "tow" && <Dispatch />}
+			{showing && job && job.Id !== "tow" && <Dispatch />}
 		</>
 	);
 };

@@ -11,17 +11,14 @@ import Nui from '../../util/Nui';
 const useStyles = makeStyles((theme) => ({
     radioContainer: {
         height: 40,
-        //maxHeight: 40,
         background: `${theme.palette.secondary.dark}CC`,
     },
     radioInner: {
         height: '100%',
-        //width: '100%',
         display: 'flex',
         flexDirection: 'row',
         padding: '4px 5px',
         overflowX: 'auto',
-        //overflowY: 'hidden',
         flexWrap: 'nowrap',
 
         '&::-webkit-scrollbar': {
@@ -59,70 +56,36 @@ export default () => {
         setOpen(2);
     }
 
-    const setRadio = (freq) => {
+    const setRadio = (freq, text) => {
         try {
             Nui.send("SwapToRadio", {
                 radio: (+freq).toFixed(1),
+                text: text
             });
         } catch (e) { }
     }
 
     const confirmAdd = (e) => {
         e.preventDefault();
-        dispatch({
-            type: 'ALERTS_RADIO_INFO_ADD',
-            payload: {
-                data: {
-                    radio: state.radio,
-                    text: state.text,
-                }
-            }
+        Nui.send('NUI:AddRadioInfo', {
+            radio: state.radio,
+            text: state.text,
         });
-
         setOpen(0);
     };
 
     const confirmUpdate = (e) => {
         e.preventDefault();
-        dispatch({
-            type: 'ALERTS_RADIO_INFO_UPDATE',
-            payload: {
-                id: state.id,
-                data: {
-                    radio: state.radio,
-                    text: state.text,
-                }
-            }
+        Nui.send('NUI:UpdateRadioInfo', {
+            id: state.id,
+            radio: state.radio,
+            text: state.text,
         });
-
         setOpen(0);
     }
 
-    const confirmDelete = (e) => {
-        e.preventDefault();
-        dispatch({
-            type: 'ALERTS_RADIO_INFO_REMOVE',
-            payload: {
-                id: state.id,
-                data: {
-                    radio: state.radio,
-                    text: state.text,
-                }
-            }
-        });
-
-        setOpen(0);
-    }
-
-    const directDelete = (id, data) => {
-        dispatch({
-            type: 'ALERTS_RADIO_INFO_REMOVE',
-            payload: {
-                id,
-                data
-            }
-        });
-
+    const directDelete = (id) => {
+        Nui.send('NUI:RemoveRadioInfo', { id });
         setOpen(0);
     }
 
@@ -133,10 +96,6 @@ export default () => {
                 if (e.deltaY == 0) return;
                 e.preventDefault();
                 el.scrollLeft += e.deltaY * 0.5
-                // el.scrollTo({
-                //     left: el.scrollLeft + e.deltaY,
-                //     behavior: "smooth"
-                // });
             };
             el.addEventListener("wheel", onWheel);
             return () => el.removeEventListener("wheel", onWheel);
@@ -161,10 +120,15 @@ export default () => {
                     variant="standard"
                     name="mugshot"
                     value={state.radio}
-                    onChange={(e) => setState({
-                        ...state,
-                        radio: e.target.value,
-                    })}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d*$/.test(value)) {
+                            setState({
+                                ...state,
+                                radio: value,
+                            });
+                        }
+                    }}
                     label="Radio Frequency"
                     disabled={open === 2}
                     inputProps={{ maxLength: 5 }}
@@ -186,7 +150,14 @@ export default () => {
             <Grid item xs={18} className={classes.radioContainer}>
                 <div className={classes.radioInner} ref={ref}>
                     {radios.map((r, k) => (
-                        <RadioItem key={k} freq={r.radio} text={`${r.radio} - ${r.text}`} onClick={() => onUpdate(k, r.radio, r.text)} onDelete={() => directDelete(k, r)} onJoin={() => setRadio(r.radio)} />
+                        <RadioItem
+                            key={r.id || k}
+                            freq={r.radio}
+                            text={`${r.radio} - ${r.text}`}
+                            onClick={() => onUpdate(r.id, r.radio, r.text)}
+                            onDelete={() => directDelete(r.id)}
+                            onJoin={() => setRadio(r.radio, r.text)}
+                        />
                     ))}
                     <RadioItem add icon="add" text="Add" onClick={onAdd} />
                 </div>

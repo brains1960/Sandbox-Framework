@@ -177,7 +177,7 @@ RegisterServerEvent('Bowling:Server:StartBowling', function(alleyId)
                     local currentIndex
                     for k, v in ipairs(alley.players) do
                         if v.SID == mySID then
-                            v.total += res.total
+                            v.total = v.total + res.total
                             res.total = v.total
                             currentIndex = k
 

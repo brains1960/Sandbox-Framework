@@ -44,15 +44,32 @@ const useStyles = makeStyles((theme) => ({
 export default ({ log }) => {
     const classes = useStyles();
 
-    return <div className={classes.messageContainer} style={{
-        borderLeft: log.color ? `3px solid ${log.color}` : null,
-    }}>
-        <div className={classes.time}><Moment date={log.time} interval={60000} format={"HH:mm"} /></div>
-        <Divider orientation="vertical" flexItem />
-        <div className={classes.messageText}>
-            <h3>{log.title}</h3>
+    const renderTimeAndSource = () => {
+        if (log.type === 'message') {
+            return (
+                <div className={classes.time}>
+                    <Moment date={log.time * 1000} interval={60000} format={"HH:mm"} /> | {log.source}
+                </div>
+            );
+        } else {
+            return (
+                <div className={classes.time}>
+                    <Moment date={log.time * 1000} interval={60000} format={"HH:mm"} />
+                </div>
+            );
+        }
+    };
 
-            <Truncate lines={3}>{log.message}</Truncate>
+    return (
+        <div className={classes.messageContainer} style={{
+            borderLeft: log.color ? `3px solid ${log.color}` : undefined,
+        }}>
+            {renderTimeAndSource()}
+            <Divider orientation="vertical" flexItem />
+            <div className={classes.messageText}>
+                <h3>{log.title}</h3>
+                <Truncate lines={3}>{log.message}</Truncate>
+            </div>
         </div>
-    </div>
+    );
 };

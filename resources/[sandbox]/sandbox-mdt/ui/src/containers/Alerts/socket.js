@@ -13,7 +13,7 @@ const alertsSocketMiddleware = (store) => (next) => (action) => {
 			});
 
 			socket.on('connect', () => {
-				console.log('Connected to WSS');
+				// console.log('Connected to WSS');
 				store.dispatch({
 					type: 'ALERTS_WS_STATE',
 					payload: {
@@ -23,7 +23,7 @@ const alertsSocketMiddleware = (store) => (next) => (action) => {
 			});
 
 			socket.on('disconnect', (reason) => {
-				console.log('Disconnected From Dispatch WebSocket:', reason);
+				// console.log('Disconnected From Dispatch WebSocket:', reason);
 				store.dispatch({
 					type: 'ALERTS_WS_STATE',
 					payload: {
@@ -33,7 +33,7 @@ const alertsSocketMiddleware = (store) => (next) => (action) => {
 			});
 
 			socket.on('init', (data, alerts, units, myUnit, radioNames, dispatchLog) => {
-				console.log('Successfully Connected to Dispatch WebSocket - Running Init');
+				// console.log('Successfully Connected to Dispatch WebSocket - Running Init');
 				store.dispatch({
 					type: 'ALERTS_WS_INIT',
 					payload: {
@@ -48,7 +48,7 @@ const alertsSocketMiddleware = (store) => (next) => (action) => {
 			});
 
 			socket.on('alert', (alert) => {
-				console.log('RECEIVE Dispatch ALERT');
+				// console.log('RECEIVE Dispatch ALERT');
 				const state = store.getState();
 				if (!state.alerts.socketInitialised) return;
 

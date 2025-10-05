@@ -39,7 +39,7 @@ export default ({ job, type, available }) => {
 					);
 			}
 		case 'tow':
-			return <FontAwesomeIcon icon={['fas', 'truck-ramp']} />;
+			return <FontAwesomeIcon icon={['fas', 'truck-ramp-box']} />;
 		case 'prison':
 			return <FontAwesomeIcon icon={['fas', 'handcuffs']} />;
 		default:

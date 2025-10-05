@@ -1,4 +1,3 @@
-
 name("AuthenticRP RP MDT")
 description("Mobile Data Terminal Written For AuthenticRP RP")
 author("Dr Nick")

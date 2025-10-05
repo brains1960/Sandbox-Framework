@@ -77,7 +77,11 @@ export default ({ unitType, unitData, missingCallsign }) => {
 	const allUnits = useSelector(state => state.alerts.units);
 	const units = allUnits?.[unitType];
 
-	const subUnits = units?.filter(u => u.operatingUnder === unitData.primary) ?? Array();
+	if (!unitData) {
+	return null; // Skip rendering if unitData is undefined
+	}
+
+	const subUnits = units?.filter(u => u && u.operatingUnder === (unitData.primary || 'TBD')) ?? [];
 
 	const myUnitData = allUnits?.[myUnit.job].find(u => u.primary === myUnit.primary);
 	const mySubUnits = units?.filter(u => u.operatingUnder === myUnitData?.primary);
@@ -85,7 +89,7 @@ export default ({ unitType, unitData, missingCallsign }) => {
 	// Is the primary or is part of the unit
 	const withinUnit = (unitData.primary == myUnitData?.primary || myUnitData?.operatingUnder == unitData.primary)
 
-	if (!myUnitData) return null;
+	if (!myUnitData && !unitData) return null;
 
 	const PursuitModeColor = (mode) => {
 		let color = "secondary";
@@ -103,37 +107,28 @@ export default ({ unitType, unitData, missingCallsign }) => {
 	}
 
 	const changeUnit = async (newType) => {
-		dispatch({
-			type: 'ALERTS_CHANGE_UNIT_TYPE',
-			payload: {
-				job: unitData.job,
-				primary: unitData.primary,
-				type: newType,
-			}
-		})
+		Nui.send('NUI:ChangeUnitType', {
+			job: open.job,
+			primary: open.primary,
+			type: newType,
+		});
 		setOpen(null);
 	};
 
 	const toggleAvailability = async () => {
-		dispatch({
-			type: 'ALERTS_CHANGE_UNIT_AVAILABILITY',
-			payload: {
-				job: unitData.job,
-				primary: unitData.primary,
-			}
-		})
+		Nui.send('NUI:ChangeAvailability', {
+			job: open.job,
+			primary: open.primary,
+		});
 		setOpen(null);
 	};
 
 	const operateUnder = async () => {
-		dispatch({
-			type: 'ALERTS_OPERATE_UNDER_UNIT',
-			payload: {
-				job: unitData.job,
-				primary: unitData.primary,
-				unit: myUnitData.primary,
-			}
-		})
+		Nui.send('NUI:OperateUnderUnit', {
+			job: open.job,
+			primary: open.primary, // Current unit's callsign
+			unit: unitData.primary, // Replace with target unit's callsign
+		});
 		setOpen(null);
 	};
 
@@ -151,26 +146,19 @@ export default ({ unitType, unitData, missingCallsign }) => {
 	};
 
 	const breakOff = async () => {
-		dispatch({
-			type: 'ALERTS_BREAK_OFF_UNIT',
-			payload: {
-				job: unitData.job,
-				primary: unitData.primary,
-				unit: myUnitData.primary,
-			}
-		})
+		Nui.send('NUI:BreakOffUnit', {
+			job: open.job,
+			primary: open.primary, // Current unit's callsign
+		});
 		setOpen(null);
 	};
 
 	const removeUnit = async (subUnit) => {
-		dispatch({
-			type: 'ALERTS_BREAK_OFF_UNIT',
-			payload: {
-				job: unitData.job,
-				primary: unitData.primary,
-				unit: subUnit,
-			}
-		})
+		Nui.send('NUI:BreakOffUnit', {
+			job: action.payload.job,
+			primary: action.payload.primary, // The unit that is breaking off / being removed
+			// 'unit' (the leader) from the original payload might be implicitly handled server-side or not needed by the NUI:BreakOffUnit event.
+		});
 		setOpen(null);
 		setSubOpen(null);
 	};
@@ -183,22 +171,19 @@ export default ({ unitType, unitData, missingCallsign }) => {
 		} catch (e) { }
 	}
 
-	if (missingCallsign && unitType != 'tow') {
+	if ((!unitData.primary || unitData.primary === '') && unitType != 'tow') {
 		return (
-			<>
-				<ListItem className={classes.item}>
-					<ListItemAvatar>
-						<Avatar className={`${classes.ava} invalid`}>
-							<FontAwesomeIcon icon={['fas', 'octagon-exclamation']} />
-						</Avatar>
-					</ListItemAvatar>
-					<ListItemText
-						//primary={unitData.primary}
-						primary={`${unitData.First[0]}. ${unitData.Last}`}
-						secondary="Unset Callsign"
-					/>
-				</ListItem>
-			</>
+			<ListItem className={classes.item}>
+			<ListItemAvatar>
+				<Avatar className={`${classes.ava} invalid`}>
+				<FontAwesomeIcon icon={['fas', 'octagon-exclamation']} />
+				</Avatar>
+			</ListItemAvatar>
+			<ListItemText
+				primary={unitData?.name || 'Unknown'}
+				secondary="Callsign: TBD"
+			/>
+			</ListItem>
 		);
 	}
 
@@ -245,30 +230,37 @@ export default ({ unitType, unitData, missingCallsign }) => {
 					</ListItemAvatar>
 					<ListItemText
 						style={{ marginTop: 0 }}
-						primary={<UnitMember data={unitData} isPrimary />}
+						primary={unitData?.name || 'Unknown'}
 						secondary={
-							subUnits.length > 0 ? (
-								<span className={classes.subUnits}>
-									{subUnits.map((sub, k) => (
-										<span className={classes.subUnit} key={k} style={{ marginRight: (k === subUnits.length - 1) ? 0 : 7.5 }} onClick={(e) => {
-											setAnchorEl(e.currentTarget);
-											setSubOpen(sub);
-										}}>
-											<UnitMember
-												data={sub}
-												isLast={k === subUnits.length - 1}
-											/>
-										</span>
-									))}
+							<>
+							Callsign: {unitData?.primary || 'TBD'}
+							{subUnits.length > 0 && (
+								<span className={classes.subUnits} style={{ display: "block", marginTop: 4 }}>
+								{subUnits.map((sub, k) => (
+									<span
+									className={classes.subUnit}
+									key={k}
+									style={{ marginRight: (k === subUnits.length - 1) ? 0 : 7.5 }}
+									onClick={(e) => {
+										setAnchorEl(e.currentTarget);
+										setSubOpen(sub);
+									}}
+									>
+									<UnitMember data={sub} isLast={k === subUnits.length - 1} />
+									</span>
+								))}
 								</span>
-							) : null
+							)}
+							</>
 						}
 					/>
-					{unitData.radioChannel && <div className={classes.radioChannel} onClick={() => setRadio(unitData.radioChannel)}>
+					<div className={classes.radioChannel} onClick={() => setRadio(unitData.radioChannel)}>
 						<FontAwesomeIcon icon={['fas', 'walkie-talkie']} />
 						<Divider orientation="vertical" flexItem />
-						{unitData.radioChannel !== "0" ? unitData.radioChannel : "0"}
-					</div>}
+						{unitData.radioChannel && unitData.radioChannel !== "0"
+							? unitData.radioChannel
+							: "N/A"}
+					</div>
 				</ListItem>
 			) : unitType === 'ems' ? (
 				<ListItem divider className={classes.item}>
@@ -291,30 +283,40 @@ export default ({ unitType, unitData, missingCallsign }) => {
 						</Avatar>
 					</ListItemAvatar>
 					<ListItemText
-						primary={<UnitMember data={unitData} isPrimary />}
+						primary={unitData?.name || 'Unknown'}
 						secondary={
-							subUnits.length > 0 ? (
-								<span className={classes.subUnits}>
-									{subUnits.map((sub, k) => (
-										<span className={classes.subUnit} key={k} style={{ marginRight: (k === subUnits.length - 1) ? 0 : 7.5 }} onClick={(e) => {
-											setAnchorEl(e.currentTarget);
-											setSubOpen(sub);
-										}}>
-											<UnitMember
-												data={sub}
-												isLast={k === subUnits.length - 1}
-											/>
-										</span>
-									))}
+							<>
+							Callsign: {unitData?.primary || 'TBD'}
+							{subUnits.length > 0 && (
+								<span className={classes.subUnits} style={{ display: "block", marginTop: 4 }}>
+								{subUnits.map((sub, k) => (
+									<span
+									className={classes.subUnit}
+									key={k}
+									style={{ marginRight: (k === subUnits.length - 1) ? 0 : 7.5 }}
+									onClick={(e) => {
+										setAnchorEl(e.currentTarget);
+										setSubOpen(sub);
+									}}
+									>
+									<UnitMember
+										data={sub}
+										isLast={k === subUnits.length - 1}
+									/>
+									</span>
+								))}
 								</span>
-							) : null
+							)}
+							</>
 						}
 					/>
-					{unitData.radioChannel && <div className={classes.radioChannel} onClick={() => setRadio(unitData.radioChannel)}>
+					<div className={classes.radioChannel} onClick={() => setRadio(unitData.radioChannel)}>
 						<FontAwesomeIcon icon={['fas', 'walkie-talkie']} />
 						<Divider orientation="vertical" flexItem />
-						{unitData.radioChannel !== "0" ? unitData.radioChannel : "0"}
-					</div>}
+						{unitData.radioChannel && unitData.radioChannel !== "0"
+							? unitData.radioChannel
+							: "N/A"}
+					</div>
 				</ListItem>
 			) : unitType === 'prison' ? (
 				<ListItem divider className={classes.item}>
@@ -337,30 +339,40 @@ export default ({ unitType, unitData, missingCallsign }) => {
 						</Avatar>
 					</ListItemAvatar>
 					<ListItemText
-						primary={<UnitMember data={unitData} isPrimary />}
+						primary={unitData?.name || 'Unknown'}
 						secondary={
-							subUnits.length > 0 ? (
-								<span className={classes.subUnits}>
-									{subUnits.map((sub, k) => (
-										<span className={classes.subUnit} key={k} style={{ marginRight: (k === subUnits.length - 1) ? 0 : 7.5 }} onClick={(e) => {
-											setAnchorEl(e.currentTarget);
-											setSubOpen(sub);
-										}}>
-											<UnitMember
-												data={sub}
-												isLast={k === subUnits.length - 1}
-											/>
-										</span>
-									))}
+							<>
+							Callsign: {unitData?.primary || 'TBD'}
+							{subUnits.length > 0 && (
+								<span className={classes.subUnits} style={{ display: "block", marginTop: 4 }}>
+								{subUnits.map((sub, k) => (
+									<span
+									className={classes.subUnit}
+									key={k}
+									style={{ marginRight: (k === subUnits.length - 1) ? 0 : 7.5 }}
+									onClick={(e) => {
+										setAnchorEl(e.currentTarget);
+										setSubOpen(sub);
+									}}
+									>
+									<UnitMember
+										data={sub}
+										isLast={k === subUnits.length - 1}
+									/>
+									</span>
+								))}
 								</span>
-							) : null
+							)}
+							</>
 						}
 					/>
-					{unitData.radioChannel && <div className={classes.radioChannel} onClick={() => setRadio(unitData.radioChannel)}>
+					<div className={classes.radioChannel} onClick={() => setRadio(unitData.radioChannel)}>
 						<FontAwesomeIcon icon={['fas', 'walkie-talkie']} />
 						<Divider orientation="vertical" flexItem />
-						{unitData.radioChannel !== "0" ? unitData.radioChannel : "0"}
-					</div>}
+						{unitData.radioChannel && unitData.radioChannel !== "0"
+							? unitData.radioChannel
+							: "N/A"}
+					</div>
 				</ListItem>
 			) : unitType === 'tow' ? (
 				<ListItem divider className={classes.item}>

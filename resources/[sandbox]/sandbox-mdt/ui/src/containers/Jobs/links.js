@@ -38,7 +38,7 @@ const systemAdmin = [
 		},
 	},
 	{
-		icon: ['fas', 'terminal'],
+		icon: ['fas', 'clipboard-user'],
 		label: 'Full Roster',
 		path: '/system/gov-roster',
 		exact: true,
@@ -47,7 +47,7 @@ const systemAdmin = [
 		},
 	},
 	{
-		icon: ['fas', 'terminal'],
+		icon: ['fas', 'file-invoice-dollar'],
 		label: 'Charges',
 		path: '/system/charges',
 		exact: true,
@@ -61,12 +61,13 @@ const base = [
 	{
 		name: 'home',
 		icon: ['fas', 'house'],
+		label: 'Dashboard',
 		path: '/',
 		exact: true,
 	},
 	{
 		name: 'warrants',
-		icon: ['fas', 'file-contract'],
+		icon: ['fas', 'file'],
 		label: 'Warrants',
 		path: '/warrants',
 		exact: false,
@@ -84,6 +85,7 @@ const pubPrison = [
 	{
 		name: 'home',
 		icon: ['fas', 'house'],
+		label: 'Dashboard',
 		path: '/',
 		exact: true,
 	},
@@ -93,6 +95,7 @@ const attorney = [
 	{
 		name: 'home',
 		icon: ['fas', 'house'],
+		label: 'Dashboard',
 		path: '/',
 		exact: true,
 	},
@@ -106,14 +109,14 @@ const attorney = [
 	},
 	{
 		name: 'warrants',
-		icon: ['fas', 'file-contract'],
+		icon: ['fas', 'file'],
 		label: 'Warrants',
 		path: '/warrants',
 		exact: false,
 	},
 	{
 		name: 'people',
-		icon: ['fas', 'user'],
+		icon: ['fas', 'person'],
 		label: 'People',
 		path: '/people',
 		submenu: false,
@@ -139,12 +142,13 @@ const police = [
 	{
 		name: 'home',
 		icon: ['fas', 'house'],
+		label: 'Dashboard',
 		path: '/',
 		exact: true,
 	},
 	{
 		name: 'roster',
-		icon: ['fas', 'people-group'],
+		icon: ['fas', 'user-tie'],
 		label: 'Roster',
 		path: '/roster',
 		exact: false,
@@ -159,7 +163,7 @@ const police = [
 	},
 	{
 		name: 'warrants',
-		icon: ['fas', 'file-contract'],
+		icon: ['fas', 'file'],
 		label: 'Warrants',
 		path: '/warrants',
 		exact: false,
@@ -211,7 +215,7 @@ const police = [
 		exact: true,
 	},
 	{
-		icon: ['fas', 'car-on'],
+		icon: ['fas', 'car-burst'],
 		label: 'Fleet',
 		path: '/fleet-manager',
 		exact: false,
@@ -220,7 +224,7 @@ const police = [
 		},
 	},
 	{
-		icon: ['fas', 'crown'],
+		icon: ['fas', 'user-gear'],
 		label: 'Permissions',
 		path: '/admin/permissions',
 		exact: false,
@@ -235,6 +239,7 @@ const doj = [
 	{
 		name: 'home',
 		icon: ['fas', 'house'],
+		label: 'Dashboard',
 		path: '/',
 		exact: true,
 	},
@@ -255,14 +260,14 @@ const doj = [
 	},
 	{
 		name: 'warrants',
-		icon: ['fas', 'file-contract'],
+		icon: ['fas', 'file'],
 		label: 'Warrants',
 		path: '/warrants',
 		exact: false,
 	},
 	{
 		name: 'people',
-		icon: ['fas', 'user'],
+		icon: ['fas', 'person'],
 		label: 'People',
 		path: '/people',
 		submenu: false,
@@ -307,7 +312,7 @@ const doj = [
 		exact: true,
 	},
 	{
-		icon: ['fas', 'crown'],
+		icon: ['fas', 'user-gear'],
 		label: 'Permissions',
 		path: '/admin/permissions',
 		exact: false,
@@ -322,6 +327,7 @@ const districtattorney = [
 	{
 		name: 'home',
 		icon: ['fas', 'house'],
+		label: 'Dashboard',
 		path: '/',
 		exact: true,
 	},
@@ -342,14 +348,14 @@ const districtattorney = [
 	},
 	{
 		name: 'warrants',
-		icon: ['fas', 'file-contract'],
+		icon: ['fas', 'file'],
 		label: 'Warrants',
 		path: '/warrants',
 		exact: false,
 	},
 	{
 		name: 'people',
-		icon: ['fas', 'user'],
+		icon: ['fas', 'person'],
 		label: 'People',
 		path: '/people',
 		submenu: false,
@@ -394,7 +400,7 @@ const districtattorney = [
 		exact: true,
 	},
 	{
-		icon: ['fas', 'crown'],
+		icon: ['fas', 'user-crown'],
 		label: 'Permissions',
 		path: '/admin/permissions',
 		exact: false,
@@ -409,6 +415,7 @@ const medical = [
 	{
 		name: 'home',
 		icon: ['fas', 'house'],
+		label: 'Dashboard',
 		path: '/',
 		exact: true,
 	},
@@ -429,7 +436,7 @@ const medical = [
 	},
 	{
 		name: 'people',
-		icon: ['fas', 'user'],
+		icon: ['fas', 'person'],
 		label: 'People',
 		path: '/people',
 		submenu: false,
@@ -452,7 +459,7 @@ const medical = [
 		exact: true,
 	},
 	{
-		icon: ['fas', 'crown'],
+		icon: ['fas', 'user-gear'],
 		label: 'Permissions',
 		path: '/admin/permissions',
 		exact: false,
@@ -467,6 +474,7 @@ const doc = [
 	{
 		name: 'home',
 		icon: ['fas', 'house'],
+		label: 'Dashboard',
 		path: '/',
 		exact: true,
 	},
@@ -487,14 +495,14 @@ const doc = [
 	},
 	{
 		name: 'prisoners',
-		icon: ['fas', 'user-lock'],
+		icon: ['fas', 'handcuffs'],
 		label: 'Inmate Management',
 		path: '/prisoners',
 		exact: false,
 	},
 	{
 		name: 'people',
-		icon: ['fas', 'user'],
+		icon: ['fas', 'person'],
 		label: 'People',
 		path: '/people',
 		submenu: false,
@@ -524,7 +532,7 @@ const doc = [
 		exact: true,
 	},
 	{
-		icon: ['fas', 'crown'],
+		icon: ['fas', 'user-gear'],
 		label: 'Permissions',
 		path: '/admin/permissions',
 		exact: false,

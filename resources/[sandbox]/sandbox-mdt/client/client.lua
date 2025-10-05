@@ -149,6 +149,7 @@ RegisterNetEvent("UI:Client:Reset", function(manual)
 
 	if _bodycam and manual then
 		Sounds.Play:Distance(15, "bodycam.ogg", 0.1)
+		TriggerServerEvent("KR:ToggleBodycam", true)
 	end
 end)
 
@@ -161,6 +162,9 @@ AddEventHandler("MDT:Client:ToggleBodyCam", function()
 	_bodycam = not _bodycam
 	if _bodycam then
 		Sounds.Play:Distance(15, "bodycam.ogg", 0.05)
+		TriggerServerEvent("KR:ToggleBodycam", true)
+	else
+		TriggerServerEvent("KR:ToggleBodycam", false)
 	end
 end)
 
@@ -170,8 +174,8 @@ function ToggleMDT()
 			_openCd = true
 			MDT:Open()
 
-			Citizen.CreateThread(function()
-				Citizen.Wait(2000)
+			CreateThread(function()
+				Wait(2000)
 				_openCd = false
 			end)
 		else
@@ -181,6 +185,6 @@ function ToggleMDT()
 end
 
 AddEventHandler("Government:Client:AccessPublicRecords", function()
-	Citizen.Wait(250)
+	Wait(250)
 	TriggerServerEvent("MDT:Server:OpenPublicRecords")
 end)

@@ -5,7 +5,6 @@ function RepComponents()
 	Database = exports["sandbox-base"]:FetchComponent("Database")
 	Middleware = exports["sandbox-base"]:FetchComponent("Middleware")
 	Logger = exports["sandbox-base"]:FetchComponent("Logger")
-	Database = exports["sandbox-base"]:FetchComponent("Database")
 	Reputation = exports["sandbox-base"]:FetchComponent("Reputation")
 	Inventory = exports["sandbox-base"]:FetchComponent("Inventory")
 end
@@ -17,13 +16,10 @@ AddEventHandler("Core:Shared:Ready", function()
 		"Database",
 		"Middleware",
 		"Logger",
-		"Database",
 		"Reputation",
 		"Inventory",
 	}, function(error)
-		if #error > 0 then
-			return
-		end -- Do something to handle if not all dependencies loaded
+		if #error > 0 then return end
 		RepComponents()
 		RepItems()
 	end)
@@ -50,29 +46,28 @@ _REP = {
 			hidden = hidden,
 		}
 	end,
+
 	GetLevel = function(self, source, id)
 		if GlobalState[string.format("Rep:%s", id)] ~= nil then
 			local char = Fetch:CharacterSource(source)
 			if char ~= nil then
 				local reps = char:GetData("Reputations") or {}
-                local level = 0
+				local level = 0
 				if reps[id] ~= nil then
-                    for k, v in ipairs(GlobalState[string.format("Rep:%s", id)].levels) do
-                        if v.value <= reps[id] then
-                            level = k
-                        end
-                    end
-                    return level
+					for k, v in ipairs(GlobalState[string.format("Rep:%s", id)].levels) do
+						if v.value <= reps[id] then
+							level = k
+						end
+					end
+					return level
 				else
 					return 0
 				end
-			else
-				return nil
 			end
-		else
-			return nil
 		end
+		return nil
 	end,
+
 	HasLevel = function(self, source, id, level)
 		if GlobalState[string.format("Rep:%s", id)] ~= nil then
 			return _REP:GetLevel(source, id) >= level
@@ -80,6 +75,7 @@ _REP = {
 			return false
 		end
 	end,
+
 	View = function(self, source)
 		local char = Fetch:CharacterSource(source)
 		if char ~= nil then
@@ -95,21 +91,24 @@ _REP = {
 					}
 
 					for k, v in ipairs(repData.levels) do
-                        if v.value <= val then
+						if v.value <= val then
 							repCurrent = {
 								level = k,
 								label = v.label,
 								value = v.value,
 							}
-                        end
-                    end
+						end
+					end
+
+					repCurrent.level = repCurrent.level + 1
 
 					local repNext = {
-						level = repCurrent.level + 1
+						level = repCurrent.level
 					}
 
 					local nextRepLevel = repCurrent.level + 1
 					local nextRepLevelLabel = nil
+
 					if repData.levels[nextRepLevel] then
 						repNext.value = repData.levels[nextRepLevel].value
 						repNext.label = repData.levels[nextRepLevel].label
@@ -132,10 +131,10 @@ _REP = {
 			end
 
 			return viewingData
-		else
-			return nil
 		end
+		return nil
 	end,
+
 	ViewList = function(self, source, list)
 		local char = Fetch:CharacterSource(source)
 		if char ~= nil then
@@ -151,21 +150,24 @@ _REP = {
 					}
 
 					for k, v in ipairs(repData.levels) do
-                        if v.value <= val then
+						if v.value <= val then
 							repCurrent = {
 								level = k,
 								label = v.label,
 								value = v.value,
 							}
-                        end
-                    end
+						end
+					end
+
+					repCurrent.level = repCurrent.level + 1
 
 					local repNext = {
-						level = repCurrent.level + 1
+						level = repCurrent.level
 					}
 
 					local nextRepLevel = repCurrent.level + 1
 					local nextRepLevelLabel = nil
+
 					if repData.levels[nextRepLevel] then
 						repNext.value = repData.levels[nextRepLevel].value
 						repNext.label = repData.levels[nextRepLevel].label
@@ -188,14 +190,14 @@ _REP = {
 			end
 
 			return viewingData
-		else
-			return nil
 		end
+		return nil
 	end,
+
 	Modify = {
 		Add = function(self, source, id, amount)
 			if GlobalState[string.format("Rep:%s", id)] ~= nil then
-                local rep = GlobalState[string.format("Rep:%s", id)]
+				local rep = GlobalState[string.format("Rep:%s", id)]
 				local char = Fetch:CharacterSource(source)
 				if char ~= nil then
 					local reps = char:GetData("Reputations") or {}
@@ -216,10 +218,10 @@ _REP = {
 				end
 			end
 		end,
+
 		Remove = function(self, source, id, amount)
 			if GlobalState[string.format("Rep:%s", id)] ~= nil then
-                local rep = GlobalState[string.format("Rep:%s", id)]
-
+				local rep = GlobalState[string.format("Rep:%s", id)]
 				local char = Fetch:CharacterSource(source)
 				if char ~= nil then
 					local reps = char:GetData("Reputations") or {}

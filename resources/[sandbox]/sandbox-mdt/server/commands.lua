@@ -1,4 +1,74 @@
 function RegisterChatCommands()
+
+	Chat:RegisterAdminCommand("firejob", function(source, args, rawCommand)
+		local targetSID = tonumber(args[1])
+		local jobId = args[2]
+
+		if targetSID and jobId then
+			local charData = MDT.People:View(targetSID)
+			if charData then
+				-- إزالة الوظيفة من بيانات اللاعب
+				local removed = Jobs:RemoveJob(targetSID, jobId)
+
+				if removed then
+					-- تحديث سجل الـ MDT
+					local update = {
+						["$push"] = {
+							MDTHistory = {
+								Time = (os.time() * 1000),
+								Char = source,
+								Log = string.format("Fired From Job %s By Admin (SID %s)", jobId, source),
+							},
+						},
+					}
+
+					-- إزالة Callsign لو الوظيفة من الوظائف الحكومية
+					if jobId == "police" or jobId == "ems" or jobId == "prison" then
+						update["$set"] = {
+							Callsign = false,
+						}
+					end
+
+					Database.Game:updateOne({
+						collection = "characters",
+						query = {
+							SID = targetSID,
+						},
+						update = update,
+					}, function(success, results)
+						if success and (jobId == "police" or jobId == "ems") then
+							local firedChar = Fetch:SID(targetSID)
+							if firedChar then
+								firedChar:SetData("Callsign", false)
+							end
+						end
+					end)
+
+					Chat.Send.System:Single(source, string.format("Fired SID %s from job %s", targetSID, jobId))
+				else
+					Chat.Send.System:Single(source, "Failed to remove job.")
+				end
+			else
+				Chat.Send.System:Single(source, "Character not found.")
+			end
+		else
+			Chat.Send.System:Single(source, "Invalid arguments.")
+		end
+	end,
+	{
+		help = "Force fire someone from a job",
+		params = {
+			{
+				name = "Target",
+				help = "State ID of target",
+			},
+			{
+				name = "Job ID",
+				help = "Job ID to remove from the player",
+			},
+		},
+	}, 2)
+
 	Chat:RegisterAdminCommand("setcallsign", function(source, args, rawCommand)
 		local newCallsign = args[2]
 		local target = Fetch:SID(tonumber(args[1]))
@@ -9,6 +79,7 @@ function RegisterChatCommands()
 			then
 				if MDT.People:Update(-1, target:GetData("SID"), "Callsign", newCallsign) then
 					Chat.Send.System:Single(source, "Updated Callsign")
+					EmergencyAlerts:RefreshCallsign(target:GetData("SID"),newCallsign)
 				else
 					Chat.Send.System:Single(source, "Error Updating Callsign")
 				end

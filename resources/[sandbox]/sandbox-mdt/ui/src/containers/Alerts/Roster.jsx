@@ -1,13 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import RosterSection from './components/RosterSection';
-
 import Radios from './Radios';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
 	container: {
 		height: '55%',
 		width: '100%',
@@ -33,7 +32,7 @@ const stupidConfig = {
 		{ job: "police", width: 5 },
 		{ job: "prison", width: 8 },
 	],
-}
+};
 
 export default () => {
 	const classes = useStyles();
@@ -41,21 +40,35 @@ export default () => {
 	const job = useSelector((state) => state.app.govJob);
 	const units = useSelector((state) => state.alerts.units);
 
-	if (!user || (job.Id != 'police' && job.Id != 'ems' && job.Id != 'tow' && job.Id != 'prison')) return null;
+	if (!user || !job || !['police', 'ems', 'tow', 'prison'].includes(job.Id)) return null;
 
-	if (job.Id == "tow") {
+	if (job.Id === "tow") {
 		return (
 			<Grid className={classes.container} container>
 				<Grid item xs={6}></Grid>
-				<RosterSection fullHeight width={6} type="tow" units={units?.tow?.filter((m) => m.operatingUnder === null) ?? Array()} />
-			</Grid>
-		);
-	} else {
-		return (
-			<Grid className={classes.container} container columns={18}>
-				{stupidConfig[job.Id].map(item => <RosterSection key={item.job} width={item.width} type={item.job} units={units?.[item.job]?.filter((m) => m.operatingUnder === null) ?? Array()} />)}
-				<Radios />
+				<RosterSection
+					fullHeight
+					width={6}
+					type="tow"
+					units={units?.tow?.filter((m) => m.operatingUnder === null) ?? []}
+				/>
 			</Grid>
 		);
 	}
+
+	const config = stupidConfig[job.Id] ?? [];
+
+	return (
+		<Grid className={classes.container} container columns={18}>
+			{config.map((item) => (
+				<RosterSection
+					key={`${item.job}-${units?.[item.job]?.length || 0}`} // مفتاح يتغير مع عدد الوحدات
+					width={item.width}
+					type={item.job}
+					units={units?.[item.job] ?? []}
+				/>
+			))}
+			<Radios />
+		</Grid>
+	);
 };
